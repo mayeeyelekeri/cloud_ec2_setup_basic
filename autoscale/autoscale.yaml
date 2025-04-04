@@ -90,7 +90,7 @@ Resources:
         ImageId: 
           !Sub '{{resolve:ssm:/${environment}/autoscale/ami_id}}'
         KeyName: 
-          !Sub '{{resolve:ssm:/${environment}/ec2/keyname}}'
+          !Sub '{{resolve:ssm:/${environment}/autoscale/keyname}}'
         UserData:
          Fn::Base64:
           !Sub | 
