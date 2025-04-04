@@ -34,14 +34,14 @@ Parameters:
 # 2 Resources (EC2 Template, AutoScaling Group)
 Resources:
 
-  # Set a timeout of 10 minutes, else it fails 
+  # Set a timeout of 06 minutes, else it fails 
 #  ec2WaitCondition: 
 #    Type: AWS::CloudFormation::WaitCondition
 #    CreationPolicy: 
 #      ResourceSignal:
-#        Timeout: PT10M
+#        Timeout: PT06M
         
-  # Create and EC2 teamplate and install httpd up and running 
+  # Create EC2 template and install httpd up and running 
   # Inputs: 
   #  Parameter store values 
   #  1) Template name
@@ -58,11 +58,14 @@ Resources:
     Type: AWS::EC2::LaunchTemplate
     CreationPolicy: 
           ResourceSignal:
-            Timeout: PT10M
+            Timeout: PT06M
     Metadata:
           Comment1: Install httpd
           "AWS::CloudFormation::Init":
-            config:
+            configSets:
+              basicSetup: 
+                - install_httpd
+            install_httpd:
               packages:
                 yum:
                   httpd: []
@@ -93,7 +96,7 @@ Resources:
           !Sub | 
             #!/bin/bash
             yum update -y aws-cfn-bootstrap
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myEC2template --region ${AWS::Region}
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myEC2template --configsets basicSetup --region ${AWS::Region}
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource myEC2template --region ${AWS::Region}
   # Create an autoscaling group using the template above 
   # Inputs: 
