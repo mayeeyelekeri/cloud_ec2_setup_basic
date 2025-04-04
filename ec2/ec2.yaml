@@ -1,3 +1,12 @@
+# File: ec2.yaml 
+# This module create 2 EC2 instances  
+#
+# Before executing this, make sure "init.sh" is called which would create all "Parameter Store" values 
+#
+# Resource that would be created
+# 1) Instance 1 in Public subnet 1, zone us-east-1a 
+# 2) Instance 2 in Public subnet 2, zone us-east-1b  
+
 Description: "Spinup few servers for testing"
 
 Parameters: 
@@ -23,88 +32,91 @@ Conditions:
     !Equals [ !Ref environment, "dev" ]
 
 Resources:
-  publicInstance:                                                                
-    Description: "Open to public access, on http port 80"                        
-    Type: AWS::EC2::Instance                                                     
-    Condition: createOnlyProdResources 
-    DependsOn: ec2InstanceProfile                                          
-    Properties:                                                                  
-     ImageId: !Sub '{{resolve:ssm:/${environment}/ec2/ami_id}}'
-     KeyName: !Sub '{{resolve:ssm:/${environment}/ec2/keyname}}'
-     InstanceType: !Sub '{{resolve:ssm:/${environment}/ec2/instance_type}}'
-     IamInstanceProfile: !Ref ec2InstanceProfile
-     SecurityGroupIds:                                                          
-        - Fn::ImportValue:                                                      
-           Fn::Sub: "${permStackName}-PUBLIC-SG"                                
-     SubnetId:                                                                  
-        Fn::ImportValue:                                                        
-           Fn::Sub: "${networkStackName}-PUBLIC-SUBNET1"                        
-     VpcId:                                                                     
-        Fn::ImportValue:                                                        
-          Fn::Sub: "${networkStackName}-VPCID"                                  
-                                                                                
-     UserData:                                                                  
-       Fn::Base64:                                                              
-         !Sub |
-            #!/bin/bash -x                                                       
-            sudo yum update -y
-            sudo yum install httpd -y
-            sudo echo "<h1> Server Details </h1><p><strong>HostName:</strong> $(hostname)</p> <p><strong>IP Address: </strong>$(hostname -i | cut -d " " -f 1)</p1>" > /var/www/html/index.html
-            sudo systemctl start httpd
-            sudo systemctl enable httpd
+    # Create this instance on Public Subnet 1 with "apache" running 
+    publicInstance1:                                                                
+      Description: "Open to public access, on http port 80"                        
+      Type: AWS::EC2::Instance                                                     
+      Condition: createOnlyProdResources 
+      Properties:                                                                  
+       ImageId: !Sub '{{resolve:ssm:/${environment}/ec2/ami_id}}'
+       KeyName: !Sub '{{resolve:ssm:/${environment}/ec2/keyname}}'
+       InstanceType: !Sub '{{resolve:ssm:/${environment}/ec2/instance_type}}'
+       SecurityGroupIds:                                                          
+          - Fn::ImportValue:                                                      
+             Fn::Sub: "${permStackName}-PUBLIC-SG"                                
+       SubnetId:                                                                  
+          Fn::ImportValue:                                                        
+             Fn::Sub: "${networkStackName}-PUBLIC-SUBNET1"                        
+       VpcId:                                                                     
+          Fn::ImportValue:                                                        
+            Fn::Sub: "${networkStackName}-VPCID"                                  
+                                                                                  
+       UserData:                                                                  
+         Fn::Base64:                                                              
+           !Sub |
+              #!/bin/bash -x                                                       
+              sudo yum update -y
+              sudo yum install httpd -y
+              sudo echo "<h1> Server Details </h1><p><strong>HostName:</strong> $(hostname)</p> <p><strong>IP Address: </strong>$(hostname -i | cut -d " " -f 1)</p1>" > /var/www/html/index.html
+              sudo systemctl start httpd
+              sudo systemctl enable httpd
 
-     Tags:
-       - Key: Name
-         Value: !Join ["-", [Fn::Sub: "${AWS::StackName}", "PublicInstance"] ]
-       - Key: Environment
-         Value: !Sub ${environment}
+       Tags:
+         - Key: Name
+           Value: !Join ["-", [Fn::Sub: "${AWS::StackName}", "PublicInstance1"] ]
+         - Key: Environment
+           Value: !Sub ${environment}
 
-  publicInstance2:                                                                
-    Description: "Open to public access, on http port 80"                        
-    Type: AWS::EC2::Instance                                                     
-    Condition: createOnlyProdResources 
-    DependsOn: ec2InstanceProfile                                          
-    CreationPolicy: 
-     ResourceSignal:
-      Timeout: PT10M
-    Properties:                                                                  
-     ImageId: !Sub '{{resolve:ssm:/${environment}/ec2/ami_id}}'                 
-     KeyName: !Sub '{{resolve:ssm:/${environment}/ec2/keyname}}'                
-     InstanceType: !Sub '{{resolve:ssm:/${environment}/ec2/instance_type}}'     
-     IamInstanceProfile: !Ref ec2InstanceProfile                                    
-     SecurityGroupIds:                                                          
-        - Fn::ImportValue:                                                      
-           Fn::Sub: "${permStackName}-PUBLIC-SG"                                
-     SubnetId:                                                                  
-        Fn::ImportValue:                                                        
-           Fn::Sub: "${networkStackName}-PUBLIC-SUBNET1"                        
-     VpcId:                                                                     
-        Fn::ImportValue:                                                        
-          Fn::Sub: "${networkStackName}-VPCID"                                  
-                                                                                
-     UserData:                                                                  
-       Fn::Base64:                                                              
-         !Sub |                                                                 
-            #!/bin/bash -x                                                       
-            sudo yum update -y
-            sudo yum install ruby wget  docker -y
-            sudo wget https://aws-codedeploy-us-east-1.s3.us-east-1.amazonaws.com/latest/install
-            sudo chmod +x ./install
-            sudo ./install auto
-            sudo systemctl start codedeploy-agent
-            sudo systemctl status codedeploy-agent
-            sudo usermod -aG docker ec2-user
-            sudo systemctl start docker
-            cfn-signal -e $? --stack ${AWS::StackName} --resource publicInstance2 --region ${AWS::Region}
-     Tags:
-       - Key: Name
-         Value: !Join ["-", [Fn::Sub: "${AWS::StackName}", "PublicInstance2"] ]
-            
+    # Create this instance on Public Subnet 2 with "apache" running 
+    publicInstance2:                                                                
+      Description: "Open to public access, on http port 80"                        
+      Type: AWS::EC2::Instance                                                     
+      Condition: createOnlyProdResources 
+      Properties:                                                                  
+        ImageId: !Sub '{{resolve:ssm:/${environment}/ec2/ami_id}}'
+        KeyName: !Sub '{{resolve:ssm:/${environment}/ec2/keyname}}'
+        InstanceType: !Sub '{{resolve:ssm:/${environment}/ec2/instance_type}}'
+        SecurityGroupIds:                                                          
+          - Fn::ImportValue:                                                      
+               Fn::Sub: "${permStackName}-PUBLIC-SG"                                
+        SubnetId:                                                                  
+          Fn::ImportValue:                                                        
+             Fn::Sub: "${networkStackName}-PUBLIC-SUBNET2"                        
+        VpcId:                                                                     
+          Fn::ImportValue:                                                        
+            Fn::Sub: "${networkStackName}-VPCID"                                  
+                                                                                             
+        UserData:                                                                  
+           Fn::Base64:                                                              
+              !Sub |
+                  #!/bin/bash -x                                                       
+                  sudo yum update -y
+                  sudo yum install httpd -y
+                  sudo echo "<h1> Server Details </h1><p><strong>HostName:</strong> $(hostname)</p> <p><strong>IP Address: </strong>$(hostname -i | cut -d " " -f 1)</p1>" > /var/www/html/index.html
+                  sudo systemctl start httpd
+                  sudo systemctl enable httpd
+
+        Tags:
+           - Key: Name
+             Value: !Join ["-", [Fn::Sub: "${AWS::StackName}", "PublicInstance2"] ]
+           - Key: Environment
+             Value: !Sub ${environment}
+
+# Export EC2 value 
+# 1) ec2-PUBLIC-INSTANCE1 
+# 2) ec2-PUBLIC-INSTANCE1 
 Outputs:
-  PublicInstance:
+  PublicInstance1:
     Condition: createOnlyProdResources
-    Value: !Ref publicInstance
+    Value: !Ref publicInstance1
     Export:
       "Name" :
-        Fn::Sub: "${AWS::StackName}-PUBLIC-INSTANCE"
+        Fn::Sub: "${AWS::StackName}-PUBLIC-INSTANCE1"
+
+  PublicInstance2:
+    Condition: createOnlyProdResources
+    Value: !Ref publicInstance2
+    Export:
+      "Name" :
+        Fn::Sub: "${AWS::StackName}-PUBLIC-INSTANCE2"
   

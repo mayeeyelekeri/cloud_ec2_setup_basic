@@ -1,4 +1,12 @@
-Description: "Create Autoscaling"
+# File: autoscale.yaml 
+# This module create 2 EC2 instances  
+#
+# Before executing this, make sure "init.sh" is called which would create all "Parameter Store" values 
+#
+# Resource that would be created
+# 1) EC2 Image template  
+# 2) Autoscaling group   
+Description: "Create EC2 template and Autoscaling group"
 
 Parameters: 
   networkStackName:
@@ -23,14 +31,30 @@ Parameters:
       - dev
       - prod 
 
+# 2 Resources (EC2 Template, AutoScaling Group)
 Resources:
- ec2WaitCondition: 
+
+  # Set a timeout of 10 minutes, else it fails 
+  ec2WaitCondition: 
     Type: AWS::CloudFormation::WaitCondition
     CreationPolicy: 
       ResourceSignal:
         Timeout: PT10M
         
- template:
+  # Create and EC2 teamplate and install httpd up and running 
+  # Inputs: 
+  #  Parameter store values 
+  #  1) Template name
+  #  2) Instance Type 
+  #  3) Image Id 
+  #  4) Key name 
+  #
+  #  From the "permissions" stack
+  #  5) Security Group ID  
+  #  
+  #  6) WaitCondition from resource 
+  #
+  myEC2template:
     Type: AWS::EC2::LaunchTemplate
     Metadata:
       Comment1: Install httpd
@@ -38,14 +62,17 @@ Resources:
         configSets:
           setup:
             - install_httpd
-            - install_codedeploy_agent
-        install_docker:
+        install_httpd:
           packages:
             yum:
               httpd: []
-          commands:
-            create_user:
-              command: "echo created from template > /var/www/html/index.html"
+          files:
+            "/var/www/html/index.html":
+              content: |
+               <h1> Hello from cfn-init template </h1>
+            mode: "000755"
+            owner: root
+            group: root
           services:
             sysvinit:
               httpd:
@@ -71,13 +98,27 @@ Resources:
             yum update -y aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource template --configsets setup --region ${AWS::Region}
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ec2WaitCondition --region ${AWS::Region}
- scalingGroup:
+
+  # Create an autoscaling group using the template above 
+  # Inputs: 
+  #  From Parameter store
+  #  1) Autoscale min value 
+  #  2) Autoscale max value  
+  #  3) Autoscale desired value 
+  #  4) Key name 
+  #
+  #  From the "ALB" stack
+  #  5) Target Group ID  
+  #  
+  #  6) EC2 Template reference 
+  #
+  myAutoscalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: myautogroup
+      AutoScalingGroupName: myautoscalinggroup
       LaunchTemplate: 
-        LaunchTemplateId: !Ref template  
-        Version: !GetAtt template.LatestVersionNumber
+        LaunchTemplateId: !Ref myEC2template
+        Version: !GetAtt myEC2template.LatestVersionNumber
       VPCZoneIdentifier: 
           - Fn::ImportValue: 
              Fn::Sub: "${networkStackName}-PUBLIC-SUBNET1"
@@ -103,12 +144,12 @@ Resources:
 
 Outputs:
   LoadBalancer:
-    Value: !Ref template
+    Value: !Ref myEC2template
     Export:
       "Name" :
         Fn::Sub: "${AWS::StackName}-TEMPLATE"
   AutoscaleGroup:
-    Value: !Ref scalingGroup
+    Value: !Ref myAutoscalingGroup
     Export:
       "Name" :
         Fn::Sub: "${AWS::StackName}-AUTOSCALE-GROUP"

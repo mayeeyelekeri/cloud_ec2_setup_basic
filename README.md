@@ -6,5 +6,5 @@ These are the resources gets created:
 - VPC 
 - 2 public subnets 
 - 2 private subnets 
-- 2 EC2 instance (centos) with httpd, registered under a target group 
+- 2 EC2 instances (centos) with httpd, registered under a target group 
 - Application Load Balancer 

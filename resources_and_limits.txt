@@ -1,0 +1,17 @@
+Resource      Limit 
+--------------------
+EC2                 750 hours per month 
+ALB                 750 hours per month 
+Elastic IP address  750 hours per month 
+ 
+
+Nat Gateway         Not free at all 
+
+Internet Gateway    Free
+VPC                 Free 
+Subnet              Free 
+Route Table         Free 
+Parameter Store     Free for basic parameters 
+Security Group      Free 
+Instance Role       Free
+Instance Profile    Free 

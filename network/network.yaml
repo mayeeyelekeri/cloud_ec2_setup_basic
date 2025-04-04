@@ -8,9 +8,10 @@
 # 2) Zone 1 - public subnet1, private subnet1 
 # 3) Zone 2 - public subnet2, private subnet2 
 # 4) Internet Gateway, and attach Internet gateway to VPC 
-# 6) Create Route table1, make it public by attaching Internet gateway 
-# 7) Create NAT Gateway in public subnet 1  
-# 8) Create Route table2, attach NAT Gateway 
+# 6) Create Route table1, make it public by attaching Internet gateway
+# Commented NAT related items 
+### 7) Create NAT Gateway in public subnet 1  
+### 8) Create Route table2, attach NAT Gateway 
 # 9) For Route table 2, attach both the Private subnets, so that they have internet access
 
 
@@ -173,36 +174,36 @@ Resources:
         Ref: publicRouteTable
 
   # Create NAT Gateway Elastic IP address 
-  natGatewayEIP:
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-      Tags:
-       - Key: Name
-         Value: !Join [" - ", [Fn::Sub: "${AWS::StackName}", !Sub '{{resolve:ssm:/${environment}/network/vpc_cidr}}'] ]
-       - Key: Environment
-         Value: !Sub ${environment}	
+#  natGatewayEIP:
+#    Type: AWS::EC2::EIP
+#    Properties:
+#      Domain: vpc
+#      Tags:
+#       - Key: Name
+#         Value: !Join [" - ", [Fn::Sub: "${AWS::StackName}", !Sub '{{resolve:ssm:/${environment}/network/vpc_cidr}}'] ]
+#       - Key: Environment
+#         Value: !Sub ${environment}	
 
   # Create NAT Gateway in public subnet1, zone1 
-  natGateway:
-   Type: AWS::EC2::NatGateway
-   Properties:
-      AllocationId: !GetAtt natGatewayEIP.AllocationId
-      SubnetId: !Ref publicSubnet1
-      Tags:
-       - Key: Name
-         Value: !Join [" - ", ["Nat Gateway in subnet", !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'] ]
-       - Key: Environment
-         Value: !Sub ${environment}	
+#  natGateway:
+#   Type: AWS::EC2::NatGateway
+#   Properties:
+#      AllocationId: !GetAtt natGatewayEIP.AllocationId
+#      SubnetId: !Ref publicSubnet1
+#      Tags:
+#       - Key: Name
+#         Value: !Join [" - ", ["Nat Gateway in subnet", !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'] ]
+#       - Key: Environment
+#         Value: !Sub ${environment}	
 
   # Attach Nat Gateway to Private Route table 
-  routeNATGateway:
-    DependsOn: [ natGateway ]
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref privateRouteTable
-      DestinationCidrBlock: '0.0.0.0/0'
-      NatGatewayId: !Ref natGateway
+#  routeNATGateway:
+#    DependsOn: [ natGateway ]
+#    Type: AWS::EC2::Route
+#    Properties:
+#      RouteTableId: !Ref privateRouteTable
+#      DestinationCidrBlock: '0.0.0.0/0'
+#      NatGatewayId: !Ref natGateway
 
   # Associate Private subnet1 to private  route table 
   privateSubnet1RouteTableAssociation:
@@ -223,6 +224,13 @@ Resources:
         Ref: privateRouteTable
 
 # Export the variables (VPC ID, all subnet IDs')
+# Here are the exported values 
+# 1) nw-VPCID 
+# 2) nw-PUBLIC-SUBNET1 
+# 3) nw-PUBLIC-SUBNET2 
+# 2) nw-PRIVATE-SUBNET1 
+# 2) nw-PRIVATE-SUBNET2 
+
 Outputs:
   VpcId: 
     Value: !Ref myVPC

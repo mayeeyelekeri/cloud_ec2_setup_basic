@@ -161,10 +161,11 @@ Resources:
           Ref: ec2InstanceRole
       
 # Export all the values 
-# 1) public security group 
-# 2) private security group
-# 3) EC2 Role 
-# 4) EC2 Instance profile  
+# 1) public security group : perm-PUBLIC-SG 
+# 2) private security group : perm-PRIVATE-SG 
+# 3) EC2 Role - perm-EC2-INSTANCE-ROLE
+# 4) EC2 Instance profile - perm-EC2-INSTANCE-PROFILE
+#  
 Outputs:
   PublicSecurityGroup:
     Value: !Ref publicSG

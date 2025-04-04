@@ -23,6 +23,11 @@ Parameters:
     Type: String
     Default: perm
 
+  ec2StackName:
+    Description: Name of the EC2 stack with all ec2 resources
+    Type: String
+    Default: ec2
+
   environment: 
     Type: String 
     Default: dev 
@@ -31,20 +36,15 @@ Parameters:
       - prod 
 
   albName:
-    Description: albdemo
+    Description: springdemo
     Type: String
     MinLength: 1
     MaxLength: 255
-    Default: albdemo
+    Default: springdemo
     
 Resources:
   
-  # Create a target group for application port
-  # This will only create the target group, EC2 instances are attached from the autoscaling group 
-  # Inputs: 
-  # 1) application Port from Parameter store 
-  # 2) VPC ID (from network stack)
-  #    
+ # Create a target group for application port and register both the EC2 instances  
   targetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -54,6 +54,14 @@ Resources:
       VpcId: 
         Fn::ImportValue: 
          Fn::Sub: "${networkStackName}-VPCID"
+      Targets: 
+        - Id: 
+            Fn::ImportValue: 
+                Fn::Sub: "${ec2StackName}-PUBLIC-INSTANCE1"
+        - Id: 
+            Fn::ImportValue: 
+                Fn::Sub: "${ec2StackName}-PUBLIC-INSTANCE2"
+          Port: 80
       Tags:
         - Key: Name
           Value: !Join [" - ", [Fn::Sub: "${AWS::StackName}", "TargetGroup"]]
@@ -61,12 +69,6 @@ Resources:
           Value: !Sub ${environment}
 
   # Create application load balancer and attach the target group 
-  # Inputs: 
-  # 1) Security Group (from permissions stack) 
-  # 2) Public subnet 1 (from network stack)
-  # 3) Public subnet 2 (from network stack)
-  #    
-  ta
   alb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
