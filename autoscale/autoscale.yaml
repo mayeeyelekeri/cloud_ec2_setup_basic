@@ -56,6 +56,9 @@ Resources:
   #
   myEC2template:
     Type: AWS::EC2::LaunchTemplate
+    CreationPolicy: 
+          ResourceSignal:
+            Timeout: PT10M
     Metadata:
           Comment1: Install httpd
           "AWS::CloudFormation::Init":
