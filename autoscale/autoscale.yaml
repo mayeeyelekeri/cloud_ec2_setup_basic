@@ -52,13 +52,10 @@ Resources:
   #  From the "permissions" stack
   #  5) Security Group ID  
   #  
-  #  6) WaitCondition from resource 
+  #  6) WaitCondition from resource (10 minutes timeout) 
   #
   myEC2template:
     Type: AWS::EC2::LaunchTemplate
-    CreationPolicy: 
-        ResourceSignal:
-          Timeout: PT05M 
     Metadata:
           Comment1: Install httpd
           "AWS::CloudFormation::Init":
