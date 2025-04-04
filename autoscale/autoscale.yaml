@@ -33,7 +33,7 @@ Parameters:
 
   welcomeMessage: 
     Type: String 
-    Default: Great Learning 
+    Default: cfn-init has a hand in this EC2 creation 
     
 # 2 Resources (EC2 Template, AutoScaling Group)
 Resources:
@@ -72,12 +72,12 @@ Resources:
                   httpd: []
               files:                
                 "/var/www/html/index.html":
-                    content:
-                       <h1> Hello from cfn-init </h1> 
+                    content: !Sub |
+                       <h1> ${welcomeMessage} </h1> 
                        <br>
                 "/var/www/html/another.html": 
-                    content: !Sub |
-                        <h1> ${welcomeMessage} from the stack, updated  ${AWS::StackName} </h1>
+                    content: 
+                        <h1> Hello from the stack, updated  ${AWS::StackName} </h1>
                 "/etc/cfn/cfn-hup.conf":
                     content: !Sub |
                        [main]
