@@ -56,31 +56,9 @@ Resources:
   #
   myEC2template:
     Type: AWS::EC2::LaunchTemplate
-    CreationPolicy: 
-        ResourceSignal:
-          Timeout: PT05M 
-    Metadata:
-          Comment1: Install httpd
-          "AWS::CloudFormation::Init":
-            configSets:
-              setup:
-                - install_httpd
-            install_httpd:
-              packages:
-                yum:
-                  httpd: []
-              files:                
-                "/var/www/html/index.html":
-                    content:
-                       <h1> Hello from someone </h1> 
-              services:
-                sysvinit:
-                  httpd:
-                    enabled: true
-                    ensureRunning: true
     Properties:
       LaunchTemplateName: 
-        !Sub '{{resolve:ssm:/${environment}/autoscale/template_name}}'
+        !Sub '{{resolve:ssm:/${environment}/autoscale/template_name}}'  
       LaunchTemplateData: 
         SecurityGroupIds: 
           - Fn::ImportValue: 
@@ -95,9 +73,11 @@ Resources:
          Fn::Base64:
           !Sub | 
             #!/bin/bash
-            yum update -y aws-cfn-bootstrap
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myEC2template --configsets setup --region ${AWS::Region}
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --region ${AWS::Region}
+            yum update -y 
+            yum install -y httpd
+            echo "<h1> Server Details </h1><p><strong>HostName:</strong> $(hostname)</p> <p><strong>IP Address: </strong>$(hostname -i | cut -d " " -f 1)</p1>" > /var/www/html/index.html
+            systemctl start httpd
+            systemctl enable httpd
   # Create an autoscaling group using the template above 
   # Inputs: 
   #  From Parameter store
