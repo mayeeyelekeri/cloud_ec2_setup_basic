@@ -59,7 +59,10 @@ Resources:
     Metadata:
           Comment1: Install httpd
           "AWS::CloudFormation::Init":
-            config:
+            configSets:
+              setup:
+                - install_httpd
+            install_httpd:
               packages:
                 yum:
                   httpd: []
