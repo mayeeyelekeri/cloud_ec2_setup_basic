@@ -43,7 +43,7 @@ Resources:
     Type: AWS::CloudFormation::WaitCondition
     CreationPolicy: 
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT06M
         
   # Create EC2 template and install httpd up and running 
   # Inputs: 
