@@ -24,4 +24,4 @@ echo environment is $environment
 #./ecs/init.sh $1
 
 start=$(date +%s) 
-echo "Elapsed Time: (using \$SECONDS): $SECONDS  seconds" 
+echo "Elapsed Time: $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"

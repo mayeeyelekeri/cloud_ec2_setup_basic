@@ -17,4 +17,4 @@ do
    echo .. done creating $i stack!!! 
 done 
 
-echo "Elapsed Time to create all stacks: (using \$SECONDS): $SECONDS  seconds"
+echo "Elapsed Time to create all stacks: $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
