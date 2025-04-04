@@ -35,11 +35,11 @@ Parameters:
 Resources:
 
   # Set a timeout of 10 minutes, else it fails 
-  ec2WaitCondition: 
-    Type: AWS::CloudFormation::WaitCondition
-    CreationPolicy: 
-      ResourceSignal:
-        Timeout: PT10M
+#  ec2WaitCondition: 
+#    Type: AWS::CloudFormation::WaitCondition
+#    CreationPolicy: 
+#      ResourceSignal:
+#        Timeout: PT10M
         
   # Create and EC2 teamplate and install httpd up and running 
   # Inputs: 
@@ -91,7 +91,7 @@ Resources:
             #!/bin/bash
             yum update -y aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myEC2template --region ${AWS::Region}
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ec2WaitCondition --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource myEC2template --region ${AWS::Region}
   # Create an autoscaling group using the template above 
   # Inputs: 
   #  From Parameter store
