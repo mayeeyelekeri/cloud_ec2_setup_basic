@@ -33,7 +33,7 @@ Parameters:
 
   welcomeMessage: 
     Type: String 
-    Default: Message from the Template 
+    Default: Great Learning 
     
 # 2 Resources (EC2 Template, AutoScaling Group)
 Resources:
@@ -77,7 +77,26 @@ Resources:
                        <br>
                 "/var/www/html/another.html": 
                     content: !Sub |
-                        <h1> ${welcomeMessage} from ${AWS::StackName} </h1>
+                        <h1> ${welcomeMessage} from the stack ${AWS::StackName} </h1>
+                "/etc/cfn/cfn-hup.conf":
+                    content: !Sub |
+                       [main]
+                       stack=${AWS::StackId}
+                       region=${AWS::Region}
+                       # The interval used to check for changes to the resource metadata in minutes. Default is 15
+                       interval=2
+                       mode: "000400"
+                       owner: "root"
+                       group: "root"
+                "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
+                    content: !Sub |
+                      [cfn-auto-reloader-hook]
+                      triggers=post.update
+                      path=Resources.WebServerHost.Metadata.AWS::CloudFormation::Init
+                      action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myEC2template --region ${AWS::Region}
+                      mode: "000400"
+                      owner: "root"
+                      group: "root"
               commands: 
                 getIpAddress: 
                     command: "echo Public IP Address: `curl http://checkip.amazonaws.com` >> /var/www/html/index.html"
@@ -105,6 +124,7 @@ Resources:
             #!/bin/bash
             yum update -y aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myEC2template --configsets basicSetup --region ${AWS::Region}
+            /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ec2WaitCondition --region ${AWS::Region}
   # Create an autoscaling group using the template above 
   # Inputs: 
