@@ -124,10 +124,47 @@ Resources:
          Value: !Join [" - ", [Fn::Sub: "${AWS::StackName}", "Private Security Group"] ]
        - Key: Environment
          Value: !Sub ${environment}	
+
+  # Create EC2 instance role with S3 access  
+  ec2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ec2InstanceRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: s3accesspolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetObjectVersion
+                Resource: '*'
+
+  # Create EC2 Instance profile with the role above for S3 access 
+  ec2InstanceProfile:
+    Description: "EC2 Instance profile with S3 access" 
+    Type: AWS::IAM::InstanceProfile 
+    Properties: 
+      Path: "/" 
+      Roles: 
+        - 
+          Ref: ec2InstanceRole
       
 # Export all the values 
 # 1) public security group : perm-PUBLIC-SG 
 # 2) private security group : perm-PRIVATE-SG 
+# 3) EC2 Role - perm-EC2-INSTANCE-ROLE
+# 4) EC2 Instance profile - perm-EC2-INSTANCE-PROFILE
 #  
 Outputs:
   PublicSecurityGroup:
@@ -142,3 +179,16 @@ Outputs:
       "Name" :
         Fn::Sub: "${AWS::StackName}-PRIVATE-SG"
   
+  Ec2InstanceProfile:
+    Value: !Ref ec2InstanceProfile
+    Export:
+      "Name" :
+        Fn::Sub: "${AWS::StackName}-EC2-INSTANCE-PROFILE"
+  
+  Ec2Role:
+    Value: !Ref ec2InstanceRole
+    Export:
+      "Name" :
+        Fn::Sub: "${AWS::StackName}-EC2-INSTANCE-ROLE"
+        
+
