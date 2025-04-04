@@ -69,7 +69,10 @@ Resources:
               files:                
                 "/var/www/html/index.html":
                     content:
-                       <h1> Hello from someone </h1> 
+                       <h1> Hello from cfn-init </h1> 
+              commands: 
+                getIpAddress: 
+                    command: "echo <br> Public IP Address: `curl http://checkip.amazonaws.com` >> "
               services:
                 sysvinit:
                   httpd:
