@@ -90,7 +90,7 @@ Resources:
           !Sub | 
             #!/bin/bash
             yum update -y aws-cfn-bootstrap
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myEC2template --configsets setup --region ${AWS::Region}
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myEC2template --region ${AWS::Region}
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ec2WaitCondition --region ${AWS::Region}
   # Create an autoscaling group using the template above 
   # Inputs: 
