@@ -72,7 +72,7 @@ Resources:
                        <h1> Hello from cfn-init </h1> 
               commands: 
                 getIpAddress: 
-                    command: "echo <br> Public IP Address: `curl http://checkip.amazonaws.com` >> /var/www/html/index.html"
+                    command: "echo \<br\> Public IP Address: `curl http://checkip.amazonaws.com` >> /var/www/html/index.html"
               services:
                 sysvinit:
                   httpd:
