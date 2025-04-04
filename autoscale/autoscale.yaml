@@ -77,7 +77,7 @@ Resources:
                        <br>
                 "/var/www/html/another.html": 
                     content: !Sub |
-                        <h1> ${welcomeMessage} from the stack ${AWS::StackName} </h1>
+                        <h1> ${welcomeMessage} from the stack, updated  ${AWS::StackName} </h1>
                 "/etc/cfn/cfn-hup.conf":
                     content: !Sub |
                        [main]
