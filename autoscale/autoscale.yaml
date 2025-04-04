@@ -73,7 +73,8 @@ Resources:
          Fn::Base64:
           !Sub | 
             #!/bin/bash
-            yum update -y httpd
+            yum update -y 
+            yum install -y httpd
             echo "<h1> Server Details </h1><p><strong>HostName:</strong> $(hostname)</p> <p><strong>IP Address: </strong>$(hostname -i | cut -d " " -f 1)</p1>" > /var/www/html/index.html
             systemctl start httpd
             systemctl enable httpd
